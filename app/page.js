@@ -1,95 +1,138 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client'
+import { Box, Stack, TextField, Button } from "@mui/material";
+import { useState } from "react";
+import { Assistant } from "next/font/google";
 
 export default function Home() {
+  const [messages, setMessages] = useState([
+    {
+      role: 'assistant',
+      content: 'Hi I\'m the Headstarter Support Agent, how can I assist you today?',
+    },
+  ])
+
+  const [message, setMessage] = useState('')
+
+  const sendMessage = async () => {
+    setMessage('')
+    setMessages((messages) => [
+      ...messages,
+      {role:'user', content: message},
+      {role:'assistant', content: ''}
+    ])
+    const response = fetch('/api/chat', {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify([...messages, {role: 'user', content: message}])
+    }).then (async (res)=> {
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+
+      let result = ''
+      return reader.read().then(function processText({done, value}) {
+        if (done) {
+          return result
+        }
+        const text = decoder.decode (value || new Int8Array(), {stream:true})
+        setMessages((messages) => {
+          let lastMessage = messages[messages.length - 1]
+          let otherMessages = messages.slice(0, messages.length - 1)
+          return [
+            ...otherMessages,
+            {
+              ...lastMessage,
+              content: lastMessage.content + text,
+            },
+          ]
+        })
+        return reader.read().then(processText)
+      })
+    })
+  }
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
+    <Box 
+      width="100vw" 
+      height="100vh"
+      display="flex"
+      flexDirection="column"
+      justifyContent="center"
+      alignItems="center"
+      sx={{
+        backgroundImage: `url('https://img.freepik.com/free-vector/hand-drawn-medical-background_23-2151334866.jpg?t=st=1723408979~exp=1723412579~hmac=a4dc286170525e5ddf876862cffc91e5e75be2760820dab9d713559fddd96a6c&w=1800')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      <Stack
+        direction="column"
+        width="500px"
+        height="650px"
+        border="1px solid #e0e0e0"
+        borderRadius="10px"
+        bgcolor="rgba(255, 255, 255, 0.9)"
+        p={2}
+        spacing={2}
+      >
+        <Box display="flex" justifyContent="center" alignItems="center" mb={2}>
+          <img src="https://cdn.discordapp.com/attachments/921999860515876924/1272299420737601626/betrhealth_logo-removebg-preview.png?ex=66ba78ac&is=66b9272c&hm=a0dccbc2ea8c8c7863fa3030e62eff342f5eb19208615650dcb5666e0c174b70&" alt="BetrHealth Logo" height="50px" />
+        </Box>
+        <Stack
+          direction="column"
+          spacing={2}
+          flexGrow={1}
+          overflow="auto"
+          maxHeight="100%"
+          p={1}
         >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
+          {messages.map((message, index) => (
+            <Box 
+              key={index}
+              display="flex" 
+              justifyContent={message.role === 'assistant' ? 'flex-start' : 'flex-end'}
+            >
+              <Box 
+                bgcolor={message.role === 'assistant' ? '#d269e6' : '#bff4fe'}
+                color={message.role === 'assistant' ? 'white' : 'black'}
+                borderRadius="16px"
+                p={2}
+                maxWidth="80%"
+              >
+                {message.content}
+              </Box>
+            </Box>
+          ))}
+        </Stack>
+        <Stack direction="row" spacing={1}>
+          <TextField
+            label="Message"
+            fullWidth
+            variant="outlined"
+            size="small"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            sx={{
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word',
+              whiteSpace: 'normal', 
+            }}
+          />
+          <Button 
+          variant="contained"
+          onClick={sendMessage} 
+          sx={{ bgcolor: "#d269e6",
+          minWidth: '80px',
+          '&:hover': {
+            bgcolor: "#bff4fe !important",
+            color: "#000000",
+          }
+          }}>
+            Send
+          </Button>
+        </Stack>
+      </Stack>
+    </Box>
+  )
 }
