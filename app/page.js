@@ -1,7 +1,6 @@
 'use client'
 import { Box, Stack, TextField, Button } from "@mui/material";
-import { useState } from "react";
-import { Assistant } from "next/font/google";
+import { useState, useRef, useEffect } from "react";
 
 export default function Home() {
   const [messages, setMessages] = useState([
@@ -12,6 +11,16 @@ export default function Home() {
   ])
 
   const [message, setMessage] = useState('')
+
+  const messagesEndRef = useRef(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
 
   const sendMessage = async () => {
     setMessage('')
@@ -104,6 +113,7 @@ export default function Home() {
               </Box>
             </Box>
           ))}
+          <div ref={messagesEndRef} />
         </Stack>
         <Stack direction="row" spacing={1}>
           <TextField
