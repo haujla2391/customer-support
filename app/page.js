@@ -86,7 +86,7 @@ export default function Home() {
         spacing={2}
       >
         <Box display="flex" justifyContent="center" alignItems="center" mb={2}>
-          <img src="https://cdn.discordapp.com/attachments/921999860515876924/1272299420737601626/betrhealth_logo-removebg-preview.png?ex=66ba78ac&is=66b9272c&hm=a0dccbc2ea8c8c7863fa3030e62eff342f5eb19208615650dcb5666e0c174b70&" alt="BetrHealth Logo" height="50px" />
+          <img src="/betrhealth.jpeg" alt="BetrHealth Logo" height="70px" />
         </Box>
         <Stack
           direction="column"
